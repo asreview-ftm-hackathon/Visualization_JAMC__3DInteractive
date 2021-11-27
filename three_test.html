@@ -14,6 +14,10 @@
             line-height: var(--widget-height);
             padding: var(--padding);
         }
+
+        .lil-gui .gui-selected {
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -36,8 +40,13 @@
     import * as BufferGeometryUtils from './libs/jsm/utils/BufferGeometryUtils.js';
     import { OBJLoader } from './libs/jsm/loaders/OBJLoader.js';
 
-    let container, stats, gui, guiStatsEl;
+    let container, stats, gui, guiStatsEl, guiSelectedEl;
     let camera, controls, scene, renderer, material;
+    let mesh, lastSelected;
+    const color = new THREE.Color();
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(1, 1);
 
     // gui
 
@@ -47,10 +56,10 @@
         NAIVE: 'NAIVE'
     };
 
-    const api = {
-        method: Method.INSTANCED,
-        count: 1000
-    };
+    // const api = {
+    //     method: Method.INSTANCED,
+    //     count: 1000
+    // };
 
     //
 
@@ -108,13 +117,12 @@
             position.y = document.y * 20 + 10;
             position.z = document.z * 20 + 10;
 
-            // position.x = Math.random() * 40 - 20;
-            // position.y = Math.random() * 40 - 20;
-            // position.z = Math.random() * 40 - 20;
-
             rotation.x = Math.random() * 2 * Math.PI;
             rotation.y = Math.random() * 2 * Math.PI;
             rotation.z = Math.random() * 2 * Math.PI;
+            // rotation.x = 0;
+            // rotation.y = 0;
+            // rotation.z = 0;
 
             quaternion.setFromEuler( rotation );
 
@@ -135,7 +143,7 @@
 
         loader.load('./geometry/Sample_Book.obj', function ( object ) {
 
-                    console.log(object.children[0])
+                    // console.log(object.children[0])
                     const geometry = object.children[0].geometry
 
                     material = new THREE.MeshLambertMaterial();
@@ -152,13 +160,14 @@
     function makeInstanced( geometry ) {
 
         const matrix = new THREE.Matrix4();
-        const mesh = new THREE.InstancedMesh( geometry, material, api.count );
+        mesh = new THREE.InstancedMesh( geometry, material, data.length );
 
-        console.log(data.length)
+        // console.log(data.length)
         for ( let i = 0; i < data.length ; i ++ ) {
 
             getMatrix( matrix, i );
             mesh.setMatrixAt( i, matrix );
+            mesh.setColorAt(i, color);
 
         }
 
@@ -168,12 +177,12 @@
 
         const geometryByteLength = getGeometryByteLength( geometry );
 
-        guiStatsEl.innerHTML = [
+        // guiStatsEl.innerHTML = [
 
-            '<i>GPU draw calls</i>: 1',
-            '<i>GPU memory</i>: ' + formatBytes( api.count * 16 + geometryByteLength, 2 )
+            // '<i>GPU draw calls</i>: 1',
+            // '<i>GPU memory</i>: ' + formatBytes( api.count * 16 + geometryByteLength, 2 )
 
-        ].join( '<br/>' );
+        // ].join( '<br/>' );
 
     }
 
@@ -205,7 +214,7 @@
         // controls
 
         controls = new OrbitControls( camera, renderer.domElement );
-        controls.autoRotate = true;
+        controls.autoRotate = false;
 
         // lights
 
@@ -225,16 +234,24 @@
         // gui
 
         gui = new GUI();
-        gui.add( api, 'method', Method ).onChange( initMesh );
-        gui.add( api, 'count', 1, 3000 ).step( 1 ).onChange( initMesh );
+        // gui.add( api, 'method', Method ).onChange( initMesh );
+        // gui.add( api, 'count', 1, 3000 ).step( 1 ).onChange( initMesh );
 
-        const perfFolder = gui.addFolder( 'Performance' );
+        // const perfFolder = gui.addFolder( 'Performance' );
+        //
+        // guiStatsEl = document.createElement( 'div' );
+        // guiStatsEl.classList.add( 'gui-stats' );
+        //
+        // perfFolder.$children.appendChild( guiStatsEl );
+        // perfFolder.open();
 
-        guiStatsEl = document.createElement( 'div' );
-        guiStatsEl.classList.add( 'gui-stats' );
+        const selectedFolder = gui.addFolder('Selected');
 
-        perfFolder.$children.appendChild( guiStatsEl );
-        perfFolder.open();
+        guiSelectedEl = document.createElement( 'div' );
+        guiSelectedEl.classList.add( 'gui-selected')
+
+        selectedFolder.$children.appendChild(guiSelectedEl);
+        selectedFolder.open();
 
         // listeners
 
@@ -242,6 +259,8 @@
 
         Object.assign( window, { scene } );
 
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousedown', onMouseClick)
     }
 
     //
@@ -256,6 +275,35 @@
 
         renderer.setSize( width, height );
 
+    }
+
+    function onMouseMove( event ) {
+
+        event.preventDefault();
+
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    }
+
+    function onMouseClick( event ) {
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersection = raycaster.intersectObject(mesh)
+        if (intersection.length > 0) {
+            mesh.setColorAt(lastSelected, color.setHex(0xffffff));
+            lastSelected = intersection[0].instanceId;
+            mesh.setColorAt(lastSelected, color.setHex(0x0030ff));
+            mesh.instanceColor.needsUpdate = true;
+            // console.log(intersection[0].instanceId, data[intersection[0].instanceId]);
+
+            guiSelectedEl.innerHTML = [
+
+            '<i>Selected Title:</i>: ' + data[lastSelected].title
+
+            ].join( '<br/>' );
+
+        }
     }
 
     function animate() {
