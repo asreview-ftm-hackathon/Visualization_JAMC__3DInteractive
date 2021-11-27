@@ -387,6 +387,19 @@
         return topN;
         }
 
+    function search(query) {
+        var keywords = query.split(" ");
+
+        var results = []
+        data.forEach(element => {
+            if (keywords.some(i => element.abstract.toLowerCase().includes(i))){
+                results.push(element.document);
+            }
+        }); //ToDo: return some error message when no results were found
+        return results;
+    //ToDo: maybe use results with mesh.instanceColor.needsUpdate = true; to highlight/select result(s)
+    }
+
 
 </script>
 
