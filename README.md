@@ -31,6 +31,6 @@ The documents represented as 3d vectors are plotted in space, giving the documen
 To install all dependencies run `pip install -r requirements.txt`
 To process the data run `python3 visualization.py`. A excel dataset is required and can be placed in the `data/` subfolder. The only further requirement of the dataset is that it contains the following two attributes: `title` and `abstract` both holding data of type string (i.e., text data). 
 
-To run the interactive visualisation tool run `python3 run.py` which will launch a local server at [localhost:1337/main.html](`localhost:1337/main.html`)
+To run the interactive visualisation tool run `python3 run.py` which will launch a local server at [localhost:1337/main.html](localhost:1337/main.html)
 
 ## For the tech-savy...
