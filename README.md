@@ -15,3 +15,15 @@ We downloaded the data and load it from our `data/` folder.
 
 ## How to run
 ## For the tech-savy...
+You can visualize any data in our tool as long as it is exported as a JSON file with the following properties
+{
+"document": This is the document id,
+"title": Title of the document,
+"x": First dimension,
+"y": Second dimension,
+"z": Third dimension,
+"cluster": id of the cluster (there is support for up to 6 cluster right now),
+"norm_text_length": normalized text length (range 0 - 10), it's used for scaling.
+}
+
+Place the document under results/all_data.json
