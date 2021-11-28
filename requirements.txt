@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+sklearn
+wordcloud
+openpyxl
+scipy
+xlrd
+
+
