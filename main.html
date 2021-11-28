@@ -20,6 +20,15 @@
             /*font-size: 30px;*/
             /*margin: 15px;*/
         }
+
+        #lil-gui-container {
+            max-height: 100%;
+            position: fixed;
+            width:300px;
+            top: 0;
+            right: 15px;
+            z-index: 1001;
+        }
     </style>
 </head>
 <body>
@@ -31,7 +40,7 @@
 </div>
 
 <div id="container"></div>
-<div id="controls"></div>
+<div id="lil-gui-container"></div>
 
 <script type="module">
     import * as THREE from './build/three.module.js';
@@ -183,7 +192,7 @@
         // camera
 
         camera = new THREE.PerspectiveCamera(70, width / height, 1, 100);
-        camera.position.z = 20;
+        camera.position.x = 20;
         camera.position.y = 10;
 
         // renderer
@@ -219,7 +228,8 @@
 
         // gui
 
-        gui = new GUI();
+        // gui = new GUI({container: document.getElementById('lil-gui-container')});
+        gui = new GUI({width: 400});
 
         const guiExplanationText = document.createElement('div');
 
@@ -295,7 +305,7 @@
                 '<i>Documents closest to selected:</i>',
                 ...titles,
                 'Word cloud representing cluster',
-                '<img src="./results/image_c' + data[lastSelected].cluster + '.png" width="300px">'
+                '<img src="./results/image_c' + data[lastSelected].cluster + '.png" width="400px">'
 
             ].join('<br/>');
         }
