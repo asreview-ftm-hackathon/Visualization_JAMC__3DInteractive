@@ -71,7 +71,7 @@ You can visualize any data in our tool as long as it is exported as a JSON file 
     "x": 0.4581327643567375,
     "y": -0.10269132303493203,
     "z": 0.00710544383780284,
-    "cluster": 0.0,
+    "cluster": 0,
     "norm_text_length": 6.725033642166843
   }
 ]
