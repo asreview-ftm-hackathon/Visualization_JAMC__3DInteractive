@@ -89,28 +89,28 @@
 
     //
 
+    /**
+     * Remove old documents when loading in new ones.
+     */
     function clean() {
-
         const meshes = [];
 
-
         scene.traverse(function (object) {
-
             if (object.isMesh) meshes.push(object);
-
         });
 
         for (let i = 0; i < meshes.length; i++) {
-
             const mesh = meshes[i];
             mesh.material.dispose();
             mesh.geometry.dispose();
-
             scene.remove(mesh);
-
         }
     }
 
+    /**
+     * Returns transformation matrix for each document (place in space, scale and rotation)
+     * @type {(function(*, *): void)|*}
+     */
     const getMatrix = function () {
 
         const position = new THREE.Vector3();
@@ -127,16 +127,13 @@
             position.y = document.y * 20 + 10;
             position.z = document.z * 20 + 10;
 
-            // rotation.x = Math.random() * 2 * Math.PI;
-            // rotation.y = Math.random() * 2 * Math.PI;
-            // rotation.z = Math.random() * 2 * Math.PI;
-            rotation.x = Math.PI * 1.8 + Math.random() * 0.1 * Math.PI;
-            rotation.y = Math.PI * 0.5 + Math.random() * 0.1 * Math.PI;
-            rotation.z = Math.random() * 0.1 * Math.PI;
+            rotation.x = Math.PI * -0.1;
+            rotation.y = Math.PI * -0.5;
+            rotation.z = 0;
 
             quaternion.setFromEuler(rotation);
 
-            scale.x = scale.y = scale.z = 0.01 * (0.8 + Math.random() * 0.4);
+            scale.x = scale.y = scale.z = 0.008 + 0.0007 * document.norm_text_length;
 
             matrix.compose(position, quaternion, scale);
 
@@ -144,45 +141,40 @@
 
     }();
 
+    /**
+     * Make a new instanced mesh to represent all the documents
+     */
     function initMesh() {
-
         clean();
-
         // // make instances
         const loader = new OBJLoader();
-
         loader.load('./geometry/Sample_Book.obj', function (object) {
-
-            // console.log(object.children[0])
             const geometry = object.children[0].geometry
-
             material = new THREE.MeshLambertMaterial();
-
             geometry.computeVertexNormals();
-
             makeInstanced(geometry);
-
         })
-
     }
 
-
+    /**
+     * Creates an instanced mesh
+     * @param geometry - the model of the object to represent each document
+     */
     function makeInstanced(geometry) {
-
         const matrix = new THREE.Matrix4();
         mesh = new THREE.InstancedMesh(geometry, material, data.length);
 
         for (let i = 0; i < data.length; i++) {
-
             getMatrix(matrix, i);
             mesh.setMatrixAt(i, matrix);
             mesh.setColorAt(i, color.setHex(CLUSTER_COLORS[data[i].cluster]));
-
         }
-
         scene.add(mesh);
     }
 
+    /**
+     * Initializes all necessary variables
+     */
     function init() {
 
         const width = window.innerWidth;
@@ -215,42 +207,19 @@
         controls.target.x = 10
         controls.target.y = 10
         controls.target.z = 10
-        // controls.zoo
         controls.autoRotate = true;
 
         // lights
 
         const ambientLight = new THREE.AmbientLight(0x101010);
         scene.add(ambientLight);
-        // const directionalLight = new THREE.DirectionalLight(0xfff3d4);
-        // directionalLight.position.x = 1
-        // scene.add(directionalLight)
-        const light1 = new THREE.HemisphereLight( 0xfff3d4, 0x160b0b );
+        const light1 = new THREE.HemisphereLight( 0xe3e3e3, 0x160b0b );
         light1.position.set( - 1, 1.5, 1 );
         scene.add( light1 );
-
-
-        // const axes = new THREE.AxesHelper(20)
-        // scene.add(axes)
-
-        // stats
-
-        // stats = new Stats();
-        // container.appendChild(stats.dom);
 
         // gui
 
         gui = new GUI();
-        // gui.add( api, 'method', Method ).onChange( initMesh );
-        // gui.add( api, 'count', 1, 3000 ).step( 1 ).onChange( initMesh );
-
-        // const perfFolder = gui.addFolder( 'Performance' );
-        //
-        // guiStatsEl = document.createElement( 'div' );
-        // guiStatsEl.classList.add( 'gui-stats' );
-        //
-        // perfFolder.$children.appendChild( guiStatsEl );
-        // perfFolder.open();
 
         const guiExplanationText = document.createElement('div');
 
@@ -286,29 +255,24 @@
         document.addEventListener('mousedown', onMouseClick)
     }
 
-    //
-
     function onWindowResize() {
-
         const width = window.innerWidth;
         const height = window.innerHeight;
-
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
-
         renderer.setSize(width, height);
-
     }
 
     function onMouseMove(event) {
-
         event.preventDefault();
-
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
     }
 
+    /**
+     * When clicking on the window, find a document highlight and display information about the title and its neighbors
+     * @param event
+     */
     function onMouseClick(event) {
         controls.autoRotate = false;
         raycaster.setFromCamera(mouse, camera);
@@ -329,62 +293,30 @@
 
                 '<i>Title:</i> ' + data[lastSelected].title,
                 '<i>Documents closest to selected:</i>',
-                ...titles
+                ...titles,
+                'Word cloud representing cluster',
+                '<img src="./results/image_c' + data[lastSelected].cluster + '.png" width="300px">'
 
             ].join('<br/>');
-
         }
     }
 
     function animate() {
-
         requestAnimationFrame(animate);
-
         controls.update();
-        // stats.update();
         render();
-
     }
 
     function render() {
-
         renderer.render(scene, camera);
-
     }
 
-    //
-
-    function getGeometryByteLength(geometry) {
-
-        let total = 0;
-
-        if (geometry.index) total += geometry.index.array.byteLength;
-
-        for (const name in geometry.attributes) {
-
-            total += geometry.attributes[name].array.byteLength;
-
-        }
-
-        return total;
-
-    }
-
-    // Source: https://stackoverflow.com/a/18650828/1314762
-    function formatBytes(bytes, decimals) {
-
-        if (bytes === 0) return '0 bytes';
-
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['bytes', 'KB', 'MB'];
-
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-
-    }
-
+    /**
+     * Return n closest documents to the target document
+     * @param targetDoc
+     * @param n
+     * @returns {*[]}
+     */
     function getNProximal(targetDoc, n = 10) {
 
         let dataDistances = [...data]
@@ -405,6 +337,11 @@
         return dataDistances.slice(1, n + 1); //ignore target element itself
     }
 
+    /**
+     * Function meant to search for document with specific words, not fully implemented
+     * @param query
+     * @returns {*[]}
+     */
     function search(query) {
         var keywords = query.split(" ");
 
