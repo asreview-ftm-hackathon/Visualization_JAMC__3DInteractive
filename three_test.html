@@ -37,7 +37,6 @@
     import { GUI } from './libs/jsm/libs/lil-gui.module.min.js';
 
     import { OrbitControls } from './libs/jsm/controls/OrbitControls.js';
-    import * as BufferGeometryUtils from './libs/jsm/utils/BufferGeometryUtils.js';
     import { OBJLoader } from './libs/jsm/loaders/OBJLoader.js';
 
     let container, stats, gui, guiStatsEl, guiSelectedEl;
@@ -56,6 +55,15 @@
         NAIVE: 'NAIVE'
     };
 
+    const CLUSTER_COLORS = {
+        0: 0x8CF5E5,
+        1: 0x99D47D,
+        2: 0xEBD686,
+        3: 0xF0A27D,
+        4: 0xF59FE8,
+        5: 0x9696FA
+    };
+
     // const api = {
     //     method: Method.INSTANCED,
     //     count: 1000
@@ -68,7 +76,7 @@
     init();
     initMesh();
 
-    fetch('./results/prelim_data.json')
+    fetch('./results/prelim_data_5_cluster.json')
         .then(response => response.json())
         .then(json => {
         data = json
@@ -162,28 +170,17 @@
         const matrix = new THREE.Matrix4();
         mesh = new THREE.InstancedMesh( geometry, material, data.length );
 
-        // console.log(data.length)
         for ( let i = 0; i < data.length ; i ++ ) {
 
             getMatrix( matrix, i );
             mesh.setMatrixAt( i, matrix );
-            mesh.setColorAt(i, color);
+
+            console.log(data[i].cluster)
+            mesh.setColorAt(i, color.setHex(CLUSTER_COLORS[data[i].cluster]));
 
         }
 
         scene.add( mesh );
-
-        //
-
-        const geometryByteLength = getGeometryByteLength( geometry );
-
-        // guiStatsEl.innerHTML = [
-
-            // '<i>GPU draw calls</i>: 1',
-            // '<i>GPU memory</i>: ' + formatBytes( api.count * 16 + geometryByteLength, 2 )
-
-        // ].join( '<br/>' );
-
     }
 
     function init() {
@@ -223,8 +220,8 @@
         const directionalLight = new THREE.DirectionalLight(0xfff3d4);
         scene.add(directionalLight)
 
-        const axes = new THREE.AxesHelper(20)
-        scene.add(axes)
+        // const axes = new THREE.AxesHelper(20)
+        // scene.add(axes)
 
         // stats
 
@@ -291,7 +288,8 @@
 
         const intersection = raycaster.intersectObject(mesh)
         if (intersection.length > 0) {
-            mesh.setColorAt(lastSelected, color.setHex(0xffffff));
+            if (lastSelected)
+                mesh.setColorAt(lastSelected, color.setHex(CLUSTER_COLORS[data[lastSelected].cluster]));
             lastSelected = intersection[0].instanceId;
             mesh.setColorAt(lastSelected, color.setHex(0x0030ff));
             mesh.instanceColor.needsUpdate = true;
