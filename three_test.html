@@ -7,7 +7,7 @@
     <link type="text/css" rel="stylesheet" href="main.css">
     <style>
         #info {
-            background-color: rgba(0,0,0,0.75);
+            background-color: rgba(0, 0, 0, 0.75);
         }
 
         .lil-gui .gui-stats {
@@ -34,10 +34,10 @@
     import * as THREE from './build/three.module.js';
 
     import Stats from './libs/jsm/libs/stats.module.js';
-    import { GUI } from './libs/jsm/libs/lil-gui.module.min.js';
+    import {GUI} from './libs/jsm/libs/lil-gui.module.min.js';
 
-    import { OrbitControls } from './libs/jsm/controls/OrbitControls.js';
-    import { OBJLoader } from './libs/jsm/loaders/OBJLoader.js';
+    import {OrbitControls} from './libs/jsm/controls/OrbitControls.js';
+    import {OBJLoader} from './libs/jsm/loaders/OBJLoader.js';
 
     let container, stats, gui, guiStatsEl, guiSelectedEl;
     let camera, controls, scene, renderer, material;
@@ -64,27 +64,20 @@
         5: 0x9696FA
     };
 
-    // const api = {
-    //     method: Method.INSTANCED,
-    //     count: 1000
-    // };
-
-    //
-
     let data = [];
 
     init();
     initMesh();
 
-    fetch('./results/prelim_data_5_cluster.json')
+    fetch('./results/data_5_clusters.json')
         .then(response => response.json())
         .then(json => {
-        data = json
-        initMesh();
-    });
+            data = json
+            initMesh();
+        });
 
     animate();
-    
+
     //
 
     function clean() {
@@ -92,19 +85,19 @@
         const meshes = [];
 
 
-        scene.traverse( function ( object ) {
+        scene.traverse(function (object) {
 
-            if ( object.isMesh ) meshes.push( object );
+            if (object.isMesh) meshes.push(object);
 
-        } );
+        });
 
-        for ( let i = 0; i < meshes.length; i ++ ) {
+        for (let i = 0; i < meshes.length; i++) {
 
-            const mesh = meshes[ i ];
+            const mesh = meshes[i];
             mesh.material.dispose();
             mesh.geometry.dispose();
 
-            scene.remove( mesh );
+            scene.remove(mesh);
 
         }
     }
@@ -117,7 +110,7 @@
         const scale = new THREE.Vector3();
         let document = {};
 
-        return function ( matrix, i ) {
+        return function (matrix, i) {
 
             document = data[i];
 
@@ -132,11 +125,11 @@
             // rotation.y = 0;
             // rotation.z = 0;
 
-            quaternion.setFromEuler( rotation );
+            quaternion.setFromEuler(rotation);
 
             scale.x = scale.y = scale.z = 0.01 * (0.8 + Math.random() * 0.4);
 
-            matrix.compose( position, quaternion, scale );
+            matrix.compose(position, quaternion, scale);
 
         };
 
@@ -149,38 +142,36 @@
         // // make instances
         const loader = new OBJLoader();
 
-        loader.load('./geometry/Sample_Book.obj', function ( object ) {
+        loader.load('./geometry/Sample_Book.obj', function (object) {
 
-                    // console.log(object.children[0])
-                    const geometry = object.children[0].geometry
+            // console.log(object.children[0])
+            const geometry = object.children[0].geometry
 
-                    material = new THREE.MeshLambertMaterial();
+            material = new THREE.MeshLambertMaterial();
 
-                    geometry.computeVertexNormals();
+            geometry.computeVertexNormals();
 
-                    makeInstanced( geometry );
+            makeInstanced(geometry);
 
-                })
+        })
 
     }
 
 
-    function makeInstanced( geometry ) {
+    function makeInstanced(geometry) {
 
         const matrix = new THREE.Matrix4();
-        mesh = new THREE.InstancedMesh( geometry, material, data.length );
+        mesh = new THREE.InstancedMesh(geometry, material, data.length);
 
-        for ( let i = 0; i < data.length ; i ++ ) {
+        for (let i = 0; i < data.length; i++) {
 
-            getMatrix( matrix, i );
-            mesh.setMatrixAt( i, matrix );
-
-            console.log(data[i].cluster)
+            getMatrix(matrix, i);
+            mesh.setMatrixAt(i, matrix);
             mesh.setColorAt(i, color.setHex(CLUSTER_COLORS[data[i].cluster]));
 
         }
 
-        scene.add( mesh );
+        scene.add(mesh);
     }
 
     function init() {
@@ -190,27 +181,27 @@
 
         // camera
 
-        camera = new THREE.PerspectiveCamera( 70, width / height, 1, 100 );
+        camera = new THREE.PerspectiveCamera(70, width / height, 1, 100);
         camera.position.z = 30;
 
         // renderer
 
-        renderer = new THREE.WebGLRenderer( { antialias: true } );
-        renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( width, height );
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(width, height);
         renderer.outputEncoding = THREE.sRGBEncoding;
 
-        container = document.getElementById( 'container' );
-        container.appendChild( renderer.domElement );
+        container = document.getElementById('container');
+        container.appendChild(renderer.domElement);
 
         // scene
 
         scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0x404040 );
+        scene.background = new THREE.Color(0x404040);
 
         // controls
 
-        controls = new OrbitControls( camera, renderer.domElement );
+        controls = new OrbitControls(camera, renderer.domElement);
         controls.autoRotate = false;
 
         // lights
@@ -226,7 +217,7 @@
         // stats
 
         stats = new Stats();
-        container.appendChild( stats.dom );
+        container.appendChild(stats.dom);
 
         // gui
 
@@ -244,17 +235,17 @@
 
         const selectedFolder = gui.addFolder('Selected');
 
-        guiSelectedEl = document.createElement( 'div' );
-        guiSelectedEl.classList.add( 'gui-selected')
+        guiSelectedEl = document.createElement('div');
+        guiSelectedEl.classList.add('gui-selected')
 
         selectedFolder.$children.appendChild(guiSelectedEl);
         selectedFolder.open();
 
         // listeners
 
-        window.addEventListener( 'resize', onWindowResize );
+        window.addEventListener('resize', onWindowResize);
 
-        Object.assign( window, { scene } );
+        Object.assign(window, {scene});
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mousedown', onMouseClick)
@@ -270,20 +261,20 @@
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
 
-        renderer.setSize( width, height );
+        renderer.setSize(width, height);
 
     }
 
-    function onMouseMove( event ) {
+    function onMouseMove(event) {
 
         event.preventDefault();
 
-        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     }
 
-    function onMouseClick( event ) {
+    function onMouseClick(event) {
         raycaster.setFromCamera(mouse, camera);
 
         const intersection = raycaster.intersectObject(mesh)
@@ -295,20 +286,23 @@
             mesh.instanceColor.needsUpdate = true;
             // console.log(intersection[0].instanceId, data[intersection[0].instanceId]);
 
+            const closest = getNProximal(data[lastSelected]);
+            const titles = closest.map(doc => doc.title);
+
             guiSelectedEl.innerHTML = [
 
-            '<i>Selected Title:</i>: ' + data[lastSelected].title
+                '<i>Selected Title:</i>: ' + data[lastSelected].title,
+                '<i>Closest</i>',
+                ...titles
 
-            ].join( '<br/>' );
+            ].join('<br/>');
 
         }
     }
 
-    getNProximal(targetDoc, n=10);
-
     function animate() {
 
-        requestAnimationFrame( animate );
+        requestAnimationFrame(animate);
 
         controls.update();
         stats.update();
@@ -318,21 +312,21 @@
 
     function render() {
 
-        renderer.render( scene, camera );
+        renderer.render(scene, camera);
 
     }
 
     //
 
-    function getGeometryByteLength( geometry ) {
+    function getGeometryByteLength(geometry) {
 
         let total = 0;
 
-        if ( geometry.index ) total += geometry.index.array.byteLength;
+        if (geometry.index) total += geometry.index.array.byteLength;
 
-        for ( const name in geometry.attributes ) {
+        for (const name in geometry.attributes) {
 
-            total += geometry.attributes[ name ].array.byteLength;
+            total += geometry.attributes[name].array.byteLength;
 
         }
 
@@ -341,61 +335,51 @@
     }
 
     // Source: https://stackoverflow.com/a/18650828/1314762
-    function formatBytes( bytes, decimals ) {
+    function formatBytes(bytes, decimals) {
 
-        if ( bytes === 0 ) return '0 bytes';
+        if (bytes === 0) return '0 bytes';
 
         const k = 1024;
         const dm = decimals < 0 ? 0 : decimals;
-        const sizes = [ 'bytes', 'KB', 'MB' ];
+        const sizes = ['bytes', 'KB', 'MB'];
 
-        const i = Math.floor( Math.log( bytes ) / Math.log( k ) );
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-        return parseFloat( ( bytes / Math.pow( k, i ) ).toFixed( dm ) ) + ' ' + sizes[ i ];
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 
     }
 
-    
-    function l2Distance(targetDoc) {
+    function getNProximal(targetDoc, n = 10) {
 
-        dataDistances = JSON.parse(JSON.stringify(data)); //deep copy
+        let dataDistances = [...data]
 
         dataDistances.forEach(doc => {
             var xDif = targetDoc.x - doc['x'];
             var yDif = targetDoc.y - doc['y'];
             var zDif = targetDoc.z - doc['z'];
-            if (targetDoc.document === doc.document){
+            if (targetDoc.document === doc.document) {
                 doc['distance'] = Number.MIN_VALUE;
             } else {
                 doc['distance'] = Math.hypot(xDif, yDif, zDif); //returns sqrt(sum(x,y,z))
             }
         });
 
+        dataDistances.sort((i_1, i_2) => i_1.distance - i_2.distance);
 
+        return dataDistances.slice(1, n + 1); //ignore target element itself
     }
-
-    function getNProximal(targetDoc, n=10) {
-
-        l2Distance(targetDoc); //get euclidean distance
-
-        dataDistances.sort((i_1, i_2)=>
-            i_1.distance - i_2.distance);
-
-        const topN = dataDistances.slice(1,n+1); //ignore target element itself
-        return topN;
-        }
 
     function search(query) {
         var keywords = query.split(" ");
 
         var results = []
         data.forEach(element => {
-            if (keywords.some(i => element.abstract.toLowerCase().includes(i))){
+            if (keywords.some(i => element.abstract.toLowerCase().includes(i))) {
                 results.push(element.document);
             }
         }); //ToDo: return some error message when no results were found
         return results;
-    //ToDo: maybe use results with mesh.instanceColor.needsUpdate = true; to highlight/select result(s)
+        //ToDo: maybe use results with mesh.instanceColor.needsUpdate = true; to highlight/select result(s)
     }
 
 
