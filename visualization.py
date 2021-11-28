@@ -32,8 +32,10 @@ X_svd = svd.fit_transform(tfidf) #returns shape(n_samples, n_components), type(n
 #k-means clustering 
 km = KMeans(n_clusters=5, n_init = 15, random_state=42) #ToDo: hyperparameter optimisation
 clusters = km.fit_predict(X_svd)
+print(clusters[0])
 clusters.resize(2509,1)
 svd_clustered = np.append(X_svd, clusters, axis=1) #storing the correspoding cluster next to the reduced dimensions
 
-dims_dict = [{'document': doc_i, 'title': data['title'][doc_i], 'x':x, 'y':y, 'z':z} for doc_i, [x,y,z] in enumerate(X_svd)]
+dims_dict = [{'document': doc_i, 'title': data['title'][doc_i], 'x':x, 'y':y, 'z':z, 'cluster':clusters[doc_i].tolist()[0]} for doc_i, [x,y,z] in enumerate(X_svd)]
+print(dims_dict[0])
 json.dump(dims_dict, open("results/data_5_clusters.json",'w'), indent=0)
