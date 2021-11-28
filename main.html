@@ -78,7 +78,7 @@
     init();
     initMesh();
 
-    fetch('./results/data_5_clusters.json')
+    fetch('./results/all_data.json')
         .then(response => response.json())
         .then(json => {
             data = json
@@ -191,7 +191,8 @@
         // camera
 
         camera = new THREE.PerspectiveCamera(70, width / height, 1, 100);
-        camera.position.z = 30;
+        camera.position.z = 20;
+        camera.position.y = 10;
 
         // renderer
 
