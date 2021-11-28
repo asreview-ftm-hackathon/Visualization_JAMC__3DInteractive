@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>three.js webgl - instancing - performance</title>
+    <title>ASReview Hackathon data visualization</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link type="text/css" rel="stylesheet" href="main.css">
@@ -16,7 +16,9 @@
         }
 
         .lil-gui .gui-selected {
-            color: white;
+            /*color: white;*/
+            /*font-size: 30px;*/
+            /*margin: 15px;*/
         }
     </style>
 </head>
@@ -24,11 +26,12 @@
 
 <div id="info">
 
-    <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - instancing - performance
+    ASReview Hackathon data visualization
 
 </div>
 
 <div id="container"></div>
+<div id="controls"></div>
 
 <script type="module">
     import * as THREE from './build/three.module.js';
@@ -48,6 +51,12 @@
     const mouse = new THREE.Vector2(1, 1);
 
     // gui
+
+    const guiVariables = {
+        search: '',
+        displayClusters: false,
+
+    }
 
     const Method = {
         INSTANCED: 'INSTANCED',
@@ -118,12 +127,12 @@
             position.y = document.y * 20 + 10;
             position.z = document.z * 20 + 10;
 
-            rotation.x = Math.random() * 2 * Math.PI;
-            rotation.y = Math.random() * 2 * Math.PI;
-            rotation.z = Math.random() * 2 * Math.PI;
-            // rotation.x = 0;
-            // rotation.y = 0;
-            // rotation.z = 0;
+            // rotation.x = Math.random() * 2 * Math.PI;
+            // rotation.y = Math.random() * 2 * Math.PI;
+            // rotation.z = Math.random() * 2 * Math.PI;
+            rotation.x = Math.PI * 1.8 + Math.random() * 0.1 * Math.PI;
+            rotation.y = Math.PI * 0.5 + Math.random() * 0.1 * Math.PI;
+            rotation.z = Math.random() * 0.1 * Math.PI;
 
             quaternion.setFromEuler(rotation);
 
@@ -197,27 +206,36 @@
         // scene
 
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x404040);
+        scene.background = new THREE.Color(0x242424);
 
         // controls
 
         controls = new OrbitControls(camera, renderer.domElement);
-        controls.autoRotate = false;
+        controls.target.x = 10
+        controls.target.y = 10
+        controls.target.z = 10
+        // controls.zoo
+        controls.autoRotate = true;
 
         // lights
 
         const ambientLight = new THREE.AmbientLight(0x101010);
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xfff3d4);
-        scene.add(directionalLight)
+        // const directionalLight = new THREE.DirectionalLight(0xfff3d4);
+        // directionalLight.position.x = 1
+        // scene.add(directionalLight)
+        const light1 = new THREE.HemisphereLight( 0xfff3d4, 0x160b0b );
+        light1.position.set( - 1, 1.5, 1 );
+        scene.add( light1 );
+
 
         // const axes = new THREE.AxesHelper(20)
         // scene.add(axes)
 
         // stats
 
-        stats = new Stats();
-        container.appendChild(stats.dom);
+        // stats = new Stats();
+        // container.appendChild(stats.dom);
 
         // gui
 
@@ -233,7 +251,21 @@
         // perfFolder.$children.appendChild( guiStatsEl );
         // perfFolder.open();
 
-        const selectedFolder = gui.addFolder('Selected');
+        const guiExplanationText = document.createElement('div');
+
+        gui.$children.appendChild(guiExplanationText);
+
+        guiExplanationText.innerHTML = [
+
+            'This is an explanation of what this visualization does.', //TODO write a proper explanation
+            '<b>Controls:</b>',
+            'Left Click and drag to rotate',
+            'Right Clock and Drag to move',
+            'Scroll to zoom'
+
+        ].join('<br/>');
+
+        const selectedFolder = gui.addFolder('Selected document');
 
         guiSelectedEl = document.createElement('div');
         guiSelectedEl.classList.add('gui-selected')
@@ -275,6 +307,7 @@
     }
 
     function onMouseClick(event) {
+        controls.autoRotate = false;
         raycaster.setFromCamera(mouse, camera);
 
         const intersection = raycaster.intersectObject(mesh)
@@ -282,7 +315,7 @@
             if (lastSelected)
                 mesh.setColorAt(lastSelected, color.setHex(CLUSTER_COLORS[data[lastSelected].cluster]));
             lastSelected = intersection[0].instanceId;
-            mesh.setColorAt(lastSelected, color.setHex(0x0030ff));
+            mesh.setColorAt(lastSelected, color.setHex(0xffffff));
             mesh.instanceColor.needsUpdate = true;
             // console.log(intersection[0].instanceId, data[intersection[0].instanceId]);
 
@@ -291,8 +324,8 @@
 
             guiSelectedEl.innerHTML = [
 
-                '<i>Selected Title:</i>: ' + data[lastSelected].title,
-                '<i>Closest</i>',
+                '<i>Title:</i> ' + data[lastSelected].title,
+                '<i>Documents closest to selected:</i>',
                 ...titles
 
             ].join('<br/>');
@@ -305,7 +338,7 @@
         requestAnimationFrame(animate);
 
         controls.update();
-        stats.update();
+        // stats.update();
         render();
 
     }
